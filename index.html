@@ -177,10 +177,17 @@
 
     .project-item-main {
       display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      flex-direction: column;
+      gap: 0.75rem;
       padding: 1rem;
       cursor: pointer;
+    }
+
+    .project-content-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
     }
 
     .project-controls-left {
@@ -188,24 +195,22 @@
         align-items: center;
     }
 
-    .project-details {
-      flex-grow: 1;
-      margin: 0 0.5rem;
-      /* Required for text truncation */
-      min-width: 0;
-    }
-
     .project-name {
       font-weight: 500;
-      font-size: 1.1rem;
-      margin-bottom: 0.25rem;
+      font-size: 1.2rem;
+      text-align: center;
+      width: 100%;
     }
     body.light .project-name { color: var(--text-primary-light); }
     body.dark .project-name { color: var(--text-primary-dark); }
 
     .project-notes {
       font-size: 0.9rem;
-      margin-bottom: 0.5rem;
+      margin-top: 0.5rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid;
+      width: 100%;
+      text-align: center;
       font-style: italic;
       opacity: 0.9;
       white-space: nowrap;
@@ -216,14 +221,21 @@
       white-space: normal;
       overflow: visible;
     }
-    body.light .project-notes { color: var(--text-secondary-light); }
-    body.dark .project-notes { color: var(--text-secondary-dark); }
+    body.light .project-notes { 
+      color: var(--text-secondary-light); 
+      border-color: var(--border-light);
+    }
+    body.dark .project-notes { 
+      color: var(--text-secondary-dark); 
+      border-color: var(--border-dark);
+    }
 
 
     .project-time {
       font-family: var(--font-mono);
-      font-size: 1.25rem;
+      font-size: 2rem;
       font-weight: 500;
+      margin: 0 1rem;
     }
     body.light .project-time { color: var(--teal-600); }
     body.dark .project-time { color: var(--teal-400); }
@@ -865,27 +877,31 @@
         return (
             <li className={`project-item ${project.isExpanded ? 'expanded' : ''}`}>
                 <div className="project-item-main" onClick={() => onToggleExpansion(project.id)}>
-                    <div className="project-controls-left">
-                        <button className="icon-button delete-button" onClick={(e) => { e.stopPropagation(); onDeleteProject(project.id); }} aria-label="Delete project">
-                            <TrashIcon />
-                        </button>
-                        <button className="icon-button edit-button" onClick={(e) => { e.stopPropagation(); onEditProject(project.id); }} aria-label="Edit project">
-                            <PencilIcon />
-                        </button>
-                    </div>
-                    <div className="project-details">
-                        <div className="project-name">{project.name}</div>
-                        {project.notes && <div className="project-notes">{project.notes}</div>}
+                    <div className="project-name">{project.name}</div>
+                    
+                    <div className="project-content-row">
+                        <div className="project-controls-left">
+                            <button className="icon-button delete-button" onClick={(e) => { e.stopPropagation(); onDeleteProject(project.id); }} aria-label="Delete project">
+                                <TrashIcon />
+                            </button>
+                            <button className="icon-button edit-button" onClick={(e) => { e.stopPropagation(); onEditProject(project.id); }} aria-label="Edit project">
+                                <PencilIcon />
+                            </button>
+                        </div>
+                        
                         <div className="project-time">{formatTime(displaySeconds)}</div>
+
+                        <div className="project-actions">
+                            <button className={`play-pause-button ${project.isRunning ? 'running' : ''}`} onClick={(e) => { e.stopPropagation(); onToggleTimer(project.id); }} aria-label={project.isRunning ? 'Pause timer' : 'Start timer'}>
+                                {project.isRunning ? <PauseIcon /> : <PlayIcon />}
+                            </button>
+                            <button className="icon-button add-time-button" onClick={(e) => { e.stopPropagation(); onOpenAddTime(project.id); }} aria-label="Add time worked">
+                                <ClockPlusIcon />
+                            </button>
+                        </div>
                     </div>
-                    <div className="project-actions">
-                        <button className={`play-pause-button ${project.isRunning ? 'running' : ''}`} onClick={(e) => { e.stopPropagation(); onToggleTimer(project.id); }} aria-label={project.isRunning ? 'Pause timer' : 'Start timer'}>
-                            {project.isRunning ? <PauseIcon /> : <PlayIcon />}
-                        </button>
-                        <button className="icon-button add-time-button" onClick={(e) => { e.stopPropagation(); onOpenAddTime(project.id); }} aria-label="Add time worked">
-                            <ClockPlusIcon />
-                        </button>
-                    </div>
+
+                    {project.notes && <div className="project-notes">{project.notes}</div>}
                 </div>
                 <div className="project-item-details">
                     <TimeLogList 
