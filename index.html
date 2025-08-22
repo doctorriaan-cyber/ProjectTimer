@@ -831,16 +831,14 @@
                 <div className="log-duration">
                     {formatTime(log.duration)}
                 </div>
-                {log.method === 'manual' && (
-                    <div className="log-actions">
-                        <button className="icon-button" onClick={(e) => { e.stopPropagation(); onEdit(log.id); }} aria-label="Edit log entry">
-                            <PencilIcon />
-                        </button>
-                        <button className="icon-button delete-button" onClick={(e) => { e.stopPropagation(); onDelete(log.id); }} aria-label="Delete log entry">
-                            <TrashIcon />
-                        </button>
-                    </div>
-                )}
+                <div className="log-actions">
+                    <button className="icon-button" onClick={(e) => { e.stopPropagation(); onEdit(log.id); }} aria-label="Edit log entry">
+                        <PencilIcon />
+                    </button>
+                    <button className="icon-button delete-button" onClick={(e) => { e.stopPropagation(); onDelete(log.id); }} aria-label="Delete log entry">
+                        <TrashIcon />
+                    </button>
+                </div>
             </li>
         );
     };
@@ -917,6 +915,7 @@
     const App = () => {
         const [projects, setProjects] = useState([]);
         const [theme, setTheme] = useState('light');
+        const [isLoaded, setIsLoaded] = useState(false);
         
         // Project Modals
         const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
@@ -945,7 +944,7 @@
                     const projectsWithDefaults = parsedProjects.map(p => ({
                         notes: '', // Add notes default if missing
                         ...p,
-                        isExpanded: false,
+                        isExpanded: p.isExpanded || false, // Persist expanded state
                         logs: p.logs || [],
                     }));
                     setProjects(projectsWithDefaults);
@@ -956,12 +955,25 @@
             } catch (error) {
                 console.error("Failed to load from localStorage", error);
             }
+            setIsLoaded(true);
         }, []);
         
         // Apply theme to body
         useEffect(() => {
             document.body.className = theme;
         }, [theme]);
+
+        // Auto-save to localStorage
+        useEffect(() => {
+            if (!isLoaded) return;
+            try {
+                // Persist the current state without altering it (e.g., stopping timers)
+                localStorage.setItem(LOCAL_STORAGE_KEYS.PROJECTS, JSON.stringify(projects));
+                localStorage.setItem(LOCAL_STORAGE_KEYS.THEME, theme);
+            } catch (error) {
+                console.error("Failed to auto-save to localStorage", error);
+            }
+        }, [projects, theme, isLoaded]);
         
         const handleSave = useCallback(() => {
             try {
@@ -1127,8 +1139,11 @@
                         ...oldLog,
                         date: newIsoDate,
                         duration: Math.round(details.seconds),
+                        method: 'manual',
                         manualType: details.type,
                         manualRange: details.type === 'range' ? { start: details.start, end: details.end } : undefined,
+                        startTime: undefined,
+                        endTime: undefined,
                     };
                     
                     const updatedLogs = p.logs.map(l => l.id === logToEdit.logId ? updatedLog : l)
