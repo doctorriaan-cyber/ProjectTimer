@@ -21,40 +21,27 @@
       --font-sans: 'Inter', sans-serif;
       --font-mono: 'Roboto Mono', monospace;
 
-      --teal-400: #2dd4bf;
-      --teal-500: #14b8a6;
-      --teal-600: #0d9488;
+      /* Dynamic Accent Colors - Default to Teal */
+      --accent-color-primary: #14b8a6;
+      --accent-color-light: #2dd4bf;
+      --accent-color-dark: #0d9488;
+      --accent-color-rgb: 20, 184, 166;
+
       --red-500: #ef4444;
       --red-600: #dc2626;
 
-      /* Light Theme */
-      --bg-primary-light: #f8fafc;
-      --bg-secondary-light: #ffffff;
-      --text-primary-light: #0f172a;
-      --text-secondary-light: #64748b;
-      --border-light: #e2e8f0;
-
-      /* Dark Theme */
-      --bg-primary-dark: #0f172a;
-      --bg-secondary-dark: #1e293b;
-      --text-primary-dark: #f8fafc;
-      --text-secondary-dark: #94a3b8;
-      --border-dark: #334155;
+      /* Dark Theme (Default) */
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --border: #334155;
     }
 
     body {
       font-family: var(--font-sans);
-      transition: background-color 0.3s ease, color 0.3s ease;
-    }
-
-    body.light {
-      background-color: var(--bg-primary-light);
-      color: var(--text-primary-light);
-    }
-
-    body.dark {
-      background-color: var(--bg-primary-dark);
-      color: var(--text-primary-dark);
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
     }
 
     #root {
@@ -68,19 +55,46 @@
 
     /* Header */
     .header {
+      position: relative; /* For center positioning of color picker */
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start; /* Align to top */
       padding: 0.5rem 0;
       margin-bottom: 1.5rem;
+    }
+    
+    .header-controls-left {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .header-search {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .header-controls-center {
+        position: absolute;
+        top: 0.5rem;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
     }
 
     .header-actions {
       display: flex;
-      align-items: center;
+      flex-direction: column;
+      align-items: flex-end;
       gap: 0.5rem;
-      flex-wrap: wrap;
+    }
+
+    .header-actions-row {
+      display: flex;
+      gap: 0.5rem;
       justify-content: flex-end;
+      align-items: center;
     }
 
     .icon-button {
@@ -95,17 +109,20 @@
       transition: background-color 0.2s ease;
     }
     .icon-button:hover {
-      background-color: rgba(0, 0, 0, 0.05);
-    }
-    body.dark .icon-button:hover {
       background-color: rgba(255, 255, 255, 0.1);
     }
     .icon-button svg {
       width: 24px;
       height: 24px;
+      fill: var(--text-primary);
     }
-    body.light .icon-button svg { fill: var(--text-primary-light); }
-    body.dark .icon-button svg { fill: var(--text-primary-dark); }
+    
+    .sort-by-label {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        margin-right: 0.25rem;
+    }
     
     .sort-button {
         background-color: transparent;
@@ -117,63 +134,53 @@
         cursor: pointer;
         transition: all 0.2s ease;
         white-space: nowrap;
-    }
-    body.light .sort-button {
-        color: var(--text-secondary-light);
-        border-color: var(--border-light);
-    }
-    body.dark .sort-button {
-        color: var(--text-secondary-dark);
-        border-color: var(--border-dark);
+        color: var(--text-secondary);
+        border-color: var(--border);
     }
     .sort-button:hover:not(:disabled) {
-        border-color: var(--teal-500);
-        color: var(--teal-500);
-    }
-    body.dark .sort-button:hover:not(:disabled) {
-        border-color: var(--teal-400);
-        color: var(--teal-400);
+        border-color: var(--accent-color-light);
+        color: var(--accent-color-light);
     }
     .sort-button.active {
-        border-color: var(--teal-500);
-        color: var(--teal-500);
-        background-color: rgba(20, 184, 166, 0.1);
-    }
-    body.dark .sort-button.active {
-        border-color: var(--teal-400);
-        color: var(--teal-400);
-        background-color: rgba(45, 212, 191, 0.1);
+        border-color: var(--accent-color-light);
+        color: var(--accent-color-light);
+        background-color: rgba(var(--accent-color-rgb), 0.1);
     }
     .sort-button:disabled {
         opacity: 0.5;
         cursor: not-allowed;
     }
 
-    .add-project-header-button {
+    .add-project-header-button, .search-header-button, .clear-search-button, .view-toggle-button {
         background-color: transparent;
-        color: var(--text-secondary-light);
-        border: 1px solid var(--border-light);
+        color: var(--text-secondary);
+        border: 1px solid var(--border);
         padding: 0.6rem 1.2rem;
         border-radius: 8px;
         font-weight: 500;
         cursor: pointer;
         transition: all 0.2s ease;
+        height: 40px; /* Align height with save button */
+        white-space: nowrap;
     }
-    .add-project-header-button:hover {
-        border-color: var(--teal-500);
-        color: var(--teal-500);
-    }
-    body.dark .add-project-header-button {
-        color: var(--text-secondary-dark);
-        border-color: var(--border-dark);
-    }
-    body.dark .add-project-header-button:hover {
-        border-color: var(--teal-400);
-        color: var(--teal-400);
+    .add-project-header-button:hover, .search-header-button:hover, .clear-search-button:hover, .view-toggle-button:hover {
+        border-color: var(--accent-color-light);
+        color: var(--accent-color-light);
     }
 
+    .clear-search-button {
+        border-color: var(--red-500);
+        color: var(--red-500);
+    }
+     .clear-search-button:hover {
+        border-color: var(--red-600);
+        color: var(--red-600);
+        background-color: rgba(220, 38, 38, 0.1);
+    }
+
+
     .save-button {
-      background-color: var(--teal-500);
+      background-color: var(--accent-color-primary);
       color: white;
       border: none;
       padding: 0.6rem 1.2rem;
@@ -181,12 +188,13 @@
       font-weight: 500;
       cursor: pointer;
       transition: background-color 0.2s ease;
+      height: 40px; /* Align height */
     }
     .save-button:hover {
-      background-color: var(--teal-600);
+      background-color: var(--accent-color-dark);
     }
     .save-button.saved {
-      background-color: var(--teal-600);
+      background-color: var(--accent-color-dark);
     }
 
 
@@ -200,23 +208,17 @@
     .no-projects {
         text-align: center;
         margin-top: 4rem;
+        color: var(--text-secondary);
     }
-    body.light .no-projects { color: var(--text-secondary-light); }
-    body.dark .no-projects { color: var(--text-secondary-dark); }
 
 
     .project-item {
+      position: relative; /* For color picker positioning */
       border-radius: 12px;
-      transition: background-color 0.3s ease;
+      transition: background-color 0.3s ease, box-shadow 0.3s;
       overflow: hidden;
-    }
-    body.light .project-item {
-      background-color: var(--bg-secondary-light);
-      border: 1px solid var(--border-light);
-    }
-    body.dark .project-item {
-      background-color: var(--bg-secondary-dark);
-      border: 1px solid var(--border-dark);
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border);
     }
 
     .project-item-main {
@@ -225,6 +227,7 @@
       gap: 0.75rem;
       padding: 1rem;
       cursor: pointer;
+      transition: padding 0.3s ease;
     }
 
     .project-content-row {
@@ -243,18 +246,17 @@
       font-size: 0.8rem;
       width: 100%;
       margin-bottom: -0.25rem; /* Adjust space to project name */
+      color: var(--text-secondary);
     }
-    body.light .project-creation-date { color: var(--text-secondary-light); }
-    body.dark .project-creation-date { color: var(--text-secondary-dark); }
 
     .project-name {
       font-weight: 500;
       font-size: 1.2rem;
       text-align: center;
       width: 100%;
+      transition: text-align 0.3s ease, font-size 0.3s ease;
+      /* Color is now set via inline style */
     }
-    body.light .project-name { color: var(--text-primary-light); }
-    body.dark .project-name { color: var(--text-primary-dark); }
 
     .project-notes {
       font-size: 0.9rem;
@@ -268,18 +270,12 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      color: var(--text-secondary); 
+      border-color: var(--border);
     }
     .project-item.expanded .project-notes {
       white-space: normal;
       overflow: visible;
-    }
-    body.light .project-notes { 
-      color: var(--text-secondary-light); 
-      border-color: var(--border-light);
-    }
-    body.dark .project-notes { 
-      color: var(--text-secondary-dark); 
-      border-color: var(--border-dark);
     }
 
 
@@ -288,9 +284,8 @@
       font-size: 1.8rem;
       font-weight: 500;
       margin: 0 0.5rem;
+      color: var(--accent-color-light);
     }
-    body.light .project-time { color: var(--teal-600); }
-    body.dark .project-time { color: var(--teal-400); }
 
 
     .project-actions {
@@ -312,33 +307,21 @@
        z-index: 2; /* Ensure buttons are clickable over the main div */
     }
 
-    body.light .delete-button svg, body.light .edit-button svg { 
-      fill: var(--text-secondary-light); 
+    .delete-button svg, .edit-button svg { 
+      fill: var(--text-secondary);
       transition: fill 0.2s ease;
     }
     .delete-button:hover svg { fill: var(--red-500); }
-    .edit-button:hover svg { fill: var(--teal-500); }
-    
-    body.dark .delete-button svg, body.dark .edit-button svg { 
-      fill: var(--text-secondary-dark);
-      transition: fill 0.2s ease;
-    }
-    body.dark .delete-button:hover svg { fill: var(--red-500); }
-    body.dark .edit-button:hover svg { fill: var(--teal-400); }
+    .edit-button:hover svg { fill: var(--accent-color-light); }
 
-    body.light .add-time-button svg { 
-      fill: var(--text-secondary-light); 
+    .add-time-button svg { 
+      fill: var(--text-secondary);
       transition: fill 0.2s ease;
     }
-    .add-time-button:hover svg { fill: var(--teal-500); }
-    body.dark .add-time-button svg { 
-      fill: var(--text-secondary-dark);
-      transition: fill 0.2s ease;
-    }
-    body.dark .add-time-button:hover svg { fill: var(--teal-400); }
+    .add-time-button:hover svg { fill: var(--accent-color-light); }
 
     .play-pause-button {
-      background-color: var(--teal-500);
+      background-color: var(--accent-color-primary);
       border: none;
       border-radius: 50%;
       width: 48px;
@@ -349,7 +332,7 @@
       transition: background-color 0.2s ease;
     }
     .play-pause-button:hover {
-      background-color: var(--teal-600);
+      background-color: var(--accent-color-dark);
     }
     .play-pause-button svg {
       fill: white;
@@ -363,6 +346,60 @@
       background-color: var(--red-600);
     }
 
+    /* Color Pickers */
+    .project-color-picker {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        width: 24px;
+        height: 24px;
+        z-index: 5;
+    }
+    .global-color-picker {
+        position: relative;
+        width: 32px;
+        height: 32px;
+    }
+    .color-picker-display {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 2px solid var(--border);
+        cursor: pointer;
+        transition: border-color 0.2s ease;
+    }
+    .project-color-picker:hover .color-picker-display,
+    .global-color-picker:hover .color-picker-display {
+        border-color: var(--accent-color-light);
+    }
+    .color-picker-input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+        border: none;
+    }
+    
+    /* Compact View Styles */
+    .project-item.is-compact-mode:not(.expanded) .project-item-main {
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+    .project-item.is-compact-mode:not(.expanded) .project-name {
+        text-align: left;
+        font-size: 1.1rem;
+    }
+    .project-item.is-compact-mode:not(.expanded) .project-creation-date,
+    .project-item.is-compact-mode:not(.expanded) .project-content-row,
+    .project-item.is-compact-mode:not(.expanded) .project-notes,
+    .project-item.is-compact-mode:not(.expanded) .project-color-picker {
+        display: none;
+    }
+
+
     /* Expanded Details & Time Log */
     .project-item-details {
       max-height: 0;
@@ -374,18 +411,16 @@
       max-height: 500px; /* Adjust as needed */
       padding: 0 1rem 1rem 1rem;
       border-top: 1px solid;
+      border-color: var(--border);
     }
-    body.light .project-item.expanded .project-item-details { border-color: var(--border-light); }
-    body.dark .project-item.expanded .project-item-details { border-color: var(--border-dark); }
     
     .time-log-container { margin-top: 1rem; }
     .time-log-container h4 {
         margin-bottom: 0.75rem;
         font-weight: 500;
         font-size: 1rem;
+        color: var(--text-primary);
     }
-    body.light .time-log-container h4 { color: var(--text-primary-light); }
-    body.dark .time-log-container h4 { color: var(--text-primary-dark); }
 
     .time-log-list {
       list-style: none;
@@ -401,28 +436,30 @@
       padding: 0.5rem 0.25rem;
       font-size: 0.9rem;
     }
-    .time-log-item:not(:last-child) { border-bottom: 1px solid; }
-    body.light .time-log-item:not(:last-child) { border-color: var(--border-light); }
-    body.dark .time-log-item:not(:last-child) { border-color: var(--border-dark); }
+    .time-log-item:not(:last-child) { 
+        border-bottom: 1px solid;
+        border-color: var(--border);
+    }
 
     .log-info { flex-grow: 1; display: flex; align-items: center; gap: 1rem; }
     .log-details { display: flex; flex-direction: column; gap: 0.2rem; }
     .log-date { font-weight: 500; }
-    body.light .log-date.weekend-log { color: var(--teal-600); }
-    body.dark .log-date.weekend-log { color: var(--teal-400); }
+    .log-date.weekend-log { color: var(--accent-color-light); }
 
-    .log-method { font-size: 0.8rem; }
-    body.light .log-method { color: var(--text-secondary-light); }
-    body.dark .log-method { color: var(--text-secondary-dark); }
+    .log-method { 
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
     
     .log-duration { font-family: var(--font-mono); font-weight: 500; }
     .log-actions { display: flex; align-items: center; }
     .log-actions .icon-button svg { width: 18px; height: 18px; }
     .log-actions .icon-button { padding: 0.3rem; }
     
-    .no-logs-message { font-size: 0.9rem; text-align: center; padding: 1rem 0; }
-    body.light .no-logs-message { color: var(--text-secondary-light); }
-    body.dark .no-logs-message { color: var(--text-secondary-dark); }
+    .no-logs-message { 
+        font-size: 0.9rem; text-align: center; padding: 1rem 0;
+        color: var(--text-secondary);
+    }
 
     /* Modal */
     .modal-overlay {
@@ -442,12 +479,7 @@
       border-radius: 12px;
       width: 90%;
       max-width: 400px;
-    }
-    body.light .modal-content {
-      background-color: var(--bg-secondary-light);
-    }
-    body.dark .modal-content {
-      background-color: var(--bg-secondary-dark);
+      background-color: var(--bg-secondary);
     }
 
     .modal-content h2 {
@@ -459,9 +491,8 @@
       margin-bottom: 1.5rem;
       text-align: center;
       line-height: 1.5;
+      color: var(--text-secondary);
     }
-    body.light .confirm-message { color: var(--text-secondary-light); }
-    body.dark .confirm-message { color: var(--text-secondary-dark); }
 
     .form-group {
       margin-bottom: 1rem;
@@ -471,10 +502,8 @@
       margin-bottom: 0.5rem;
       font-weight: 500;
       font-size: 0.9rem;
+      color: var(--text-secondary);
     }
-    body.light .form-group label { color: var(--text-secondary-light); }
-    body.dark .form-group label { color: var(--text-secondary-dark); }
-
 
     .form-input, .form-textarea {
       width: 100%;
@@ -484,26 +513,44 @@
       font-size: 1rem;
       font-family: var(--font-sans);
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-    body.light .form-input, body.light .form-textarea {
-      background-color: var(--bg-primary-light);
-      border-color: var(--border-light);
-      color: var(--text-primary-light);
-    }
-    body.dark .form-input, body.dark .form-textarea {
-      background-color: var(--bg-primary-dark);
-      border-color: var(--border-dark);
-      color: var(--text-primary-dark);
+      background-color: var(--bg-primary);
+      border-color: var(--border);
+      color: var(--text-primary);
     }
     .form-input:focus, .form-textarea:focus {
       outline: none;
-      border-color: var(--teal-500);
-      box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.2);
+      border-color: var(--accent-color-primary);
+      box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.2);
     }
 
     .form-textarea {
       resize: vertical;
       min-height: 80px;
+    }
+    
+    .search-type-selector {
+        display: flex;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    .search-type-button {
+        flex: 1;
+        padding: 0.75rem;
+        background-color: transparent;
+        border: none;
+        color: var(--text-secondary);
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    .search-type-button:not(:last-child) {
+        border-right: 1px solid var(--border);
+    }
+    .search-type-button.active {
+        background-color: var(--accent-color-primary);
+        color: white;
     }
 
     .modal-actions {
@@ -526,11 +573,11 @@
         cursor: not-allowed;
     }
     .modal-button.primary {
-      background-color: var(--teal-500);
+      background-color: var(--accent-color-primary);
       color: white;
     }
     .modal-button.primary:hover:not(:disabled) {
-      background-color: var(--teal-600);
+      background-color: var(--accent-color-dark);
     }
     .modal-button.danger {
       background-color: var(--red-500);
@@ -541,18 +588,9 @@
     }
     .modal-button.secondary {
       background-color: transparent;
+      color: var(--text-secondary);
     }
-    body.light .modal-button.secondary {
-      color: var(--text-secondary-light);
-    }
-    body.dark .modal-button.secondary {
-      color: var(--text-secondary-dark);
-    }
-
-    body.light .modal-button.secondary:hover {
-      background-color: rgba(0, 0, 0, 0.05);
-    }
-    body.dark .modal-button.secondary:hover {
+    .modal-button.secondary:hover {
       background-color: rgba(255, 255, 255, 0.1);
     }
   </style>
@@ -576,8 +614,6 @@
     import { createRoot } from 'react-dom/client';
 
     // --- TYPE DEFINITIONS ---
-    type Theme = 'light' | 'dark';
-    
     interface TimeLogEntry {
       id: number;
       date: string; // ISO string
@@ -599,12 +635,13 @@
       timerStartTime?: number; // timestamp
       logs: TimeLogEntry[];
       isExpanded: boolean;
+      color: string;
     }
 
     // --- CONSTANTS ---
     const LOCAL_STORAGE_KEYS = {
       PROJECTS: 'project-timer-projects',
-      THEME: 'project-timer-theme',
+      ACCENT_COLOR: 'project-timer-accent-color',
     };
 
     // --- HELPER FUNCTIONS ---
@@ -638,13 +675,36 @@
       return isoString.split('T')[0]; // Gets YYYY-MM-DD
     };
 
+    const lightenDarkenColor = (col, amt) => {
+        let usePound = false;
+        if (col[0] === "#") {
+            col = col.slice(1);
+            usePound = true;
+        }
+        const num = parseInt(col, 16);
+        let r = (num >> 16) + amt;
+        if (r > 255) r = 255;
+        else if (r < 0) r = 0;
+        let b = ((num >> 8) & 0x00FF) + amt;
+        if (b > 255) b = 255;
+        else if (b < 0) b = 0;
+        let g = (num & 0x0000FF) + amt;
+        if (g > 255) g = 255;
+        else if (g < 0) g = 0;
+        return (usePound ? "#" : "") + (g | (b << 8) | (r << 16)).toString(16).padStart(6, '0');
+    };
+    
+    const hexToRgb = (hex) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
+    };
+
+
     // --- SVG ICONS ---
-    const SunIcon = () => (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.64 5.64c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L5.64 2.81c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.41 1.42zm12.72 12.72c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-1.41-1.42c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l1.41 1.42zM5.64 18.36c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.41-1.41c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0l-1.41 1.41zM18.36 5.64c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.41-1.41c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0l-1.41 1.41z"/></svg>
-    );
-    const MoonIcon = () => (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.64-.11 2.41-.31-1.1-1.04-1.74-2.45-1.74-4.02 0-3.19 2.45-5.04 5.33-5.04.92 0 1.55.23 2.15.54C19.01 5.92 15.79 3 12 3z"/></svg>
-    );
     const PlusIcon = () => (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
     );
@@ -838,7 +898,7 @@
                             />
                         </div>
 
-                        <p style={{textAlign: 'center', margin: '1rem 0', fontWeight: '500', color: 'var(--text-secondary-light)'}}>OR</p>
+                        <p style={{textAlign: 'center', margin: '1rem 0', fontWeight: '500', color: 'var(--text-secondary)'}}>OR</p>
 
                         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                             <div className="form-group" style={{flex: 1}}>
@@ -854,6 +914,63 @@
                         <div className="modal-actions">
                             <button type="button" className="modal-button secondary" onClick={onClose}>Cancel</button>
                             <button type="submit" className="modal-button primary" disabled={!isFormValid}>Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        );
+    };
+
+    const SearchModal = ({ onSearch, onClose }) => {
+        const [searchType, setSearchType] = useState('name'); // 'name' or 'date'
+        const [nameQuery, setNameQuery] = useState('');
+        const [startDate, setStartDate] = useState('');
+        const [endDate, setEndDate] = useState('');
+
+        const handleSubmit = (e) => {
+            e.preventDefault();
+            if (searchType === 'name' && nameQuery.trim()) {
+                onSearch({ type: 'name', value: nameQuery.trim() });
+            } else if (searchType === 'date' && startDate && endDate && startDate <= endDate) {
+                onSearch({ type: 'date', value: { start: startDate, end: endDate } });
+            }
+        };
+
+        const isSearchDisabled = 
+            (searchType === 'name' && !nameQuery.trim()) || 
+            (searchType === 'date' && (!startDate || !endDate || startDate > endDate));
+
+        return (
+            <div className="modal-overlay" onClick={onClose}>
+                <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                    <h2>Search Projects</h2>
+                    <form onSubmit={handleSubmit}>
+                        <div className="search-type-selector">
+                            <button type="button" className={`search-type-button ${searchType === 'name' ? 'active' : ''}`} onClick={() => setSearchType('name')}>Name</button>
+                            <button type="button" className={`search-type-button ${searchType === 'date' ? 'active' : ''}`} onClick={() => setSearchType('date')}>Date Range</button>
+                        </div>
+                        
+                        {searchType === 'name' ? (
+                            <div className="form-group">
+                                <label htmlFor="searchName">Project Name</label>
+                                <input id="searchName" type="text" value={nameQuery} onChange={(e) => setNameQuery(e.target.value)} className="form-input" autoFocus />
+                            </div>
+                        ) : (
+                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                <div className="form-group" style={{flex: 1}}>
+                                    <label htmlFor="startDate">From</label>
+                                    <input id="startDate" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="form-input" />
+                                </div>
+                                <div className="form-group" style={{flex: 1}}>
+                                    <label htmlFor="endDate">To</label>
+                                    <input id="endDate" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="form-input" />
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="modal-actions">
+                            <button type="button" className="modal-button secondary" onClick={onClose}>Cancel</button>
+                            <button type="submit" className="modal-button primary" disabled={isSearchDisabled}>Search</button>
                         </div>
                     </form>
                 </div>
@@ -916,7 +1033,7 @@
         );
     };
 
-    const ProjectItem = ({ project, onToggleTimer, onEditProject, onDeleteProject, onOpenAddTime, onToggleExpansion, onEditLog, onDeleteLog }) => {
+    const ProjectItem = ({ project, isCompactView, onToggleTimer, onEditProject, onDeleteProject, onOpenAddTime, onToggleExpansion, onEditLog, onDeleteLog, onColorChange }) => {
         const [currentTime, setCurrentTime] = useState(Date.now());
 
         useEffect(() => {
@@ -932,10 +1049,24 @@
         const displaySeconds = project.timeSpent + elapsedTime;
 
         return (
-            <li className={`project-item ${project.isExpanded ? 'expanded' : ''}`}>
+            <li className={`project-item ${isCompactView ? 'is-compact-mode' : ''} ${project.isExpanded ? 'expanded' : ''}`}>
+                <div className="project-color-picker">
+                    <div className="color-picker-display" style={{ backgroundColor: project.color }}></div>
+                    <input 
+                        type="color" 
+                        className="color-picker-input" 
+                        value={project.color}
+                        onChange={(e) => {
+                            e.stopPropagation();
+                            onColorChange(project.id, e.target.value);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        aria-label="Change project name color"
+                    />
+                </div>
                 <div className="project-item-main" onClick={() => onToggleExpansion(project.id)}>
                     {project.createdAt && <div className="project-creation-date">{`Added: ${formatCreationDate(project.createdAt)}`}</div>}
-                    <div className="project-name">{project.name}</div>
+                    <div className="project-name" style={{ color: project.color }}>{project.name}</div>
                     
                     <div className="project-content-row">
                         <div className="project-controls-left">
@@ -974,10 +1105,17 @@
 
     const App = () => {
         const [projects, setProjects] = useState([]);
-        const [theme, setTheme] = useState('light');
         const [isLoaded, setIsLoaded] = useState(false);
         const [sortOrder, setSortOrder] = useState('lastAdded'); // 'lastAdded' or 'lastInteraction'
         
+        // UI State
+        const [isCompactView, setIsCompactView] = useState(false);
+        const [accentColor, setAccentColor] = useState('#14b8a6');
+        
+        // Search
+        const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+        const [searchFilter, setSearchFilter] = useState(null); // { type: 'name' | 'date', value: any }
+
         // Project Modals
         const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
         const [projectToEdit, setProjectToEdit] = useState(null);
@@ -996,49 +1134,68 @@
         // Load from localStorage on initial render
         useEffect(() => {
             try {
-                const savedProjects = localStorage.getItem(LOCAL_STORAGE_KEYS.PROJECTS);
-                const savedTheme = localStorage.getItem(LOCAL_STORAGE_KEYS.THEME);
+                // Load Accent Color
+                const savedColor = localStorage.getItem(LOCAL_STORAGE_KEYS.ACCENT_COLOR);
+                if (savedColor) {
+                    setAccentColor(savedColor);
+                }
 
+                // Load Projects
+                const savedProjects = localStorage.getItem(LOCAL_STORAGE_KEYS.PROJECTS);
                 if (savedProjects) {
                     const parsedProjects = JSON.parse(savedProjects);
                     // Add new fields for backward compatibility
                     const projectsWithDefaults = parsedProjects.map(p => ({
-                        notes: '', // Add notes default if missing
+                        notes: '',
                         ...p,
-                        createdAt: p.createdAt || new Date(p.id).toISOString(), // Add createdAt from ID if missing
-                        isExpanded: p.isExpanded || false, // Persist expanded state
+                        createdAt: p.createdAt || new Date(p.id).toISOString(),
+                        isExpanded: p.isExpanded || false,
                         logs: p.logs || [],
+                        color: p.color || '#f8fafc',
                     }));
                     // Sort initially by creation date
                     const sortedInitialProjects = projectsWithDefaults.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
                     setProjects(sortedInitialProjects);
-                }
-                if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
-                    setTheme(savedTheme);
                 }
             } catch (error) {
                 console.error("Failed to load from localStorage", error);
             }
             setIsLoaded(true);
         }, []);
-        
-        // Apply theme to body
-        useEffect(() => {
-            document.body.className = theme;
-        }, [theme]);
 
-        // Auto-save to localStorage
+        // Update CSS variables and save accent color when it changes
+        useEffect(() => {
+            if (!isLoaded) return;
+            try {
+                const root = document.documentElement;
+                const light = lightenDarkenColor(accentColor, 40);
+                const dark = lightenDarkenColor(accentColor, -20);
+                const rgb = hexToRgb(accentColor);
+
+                root.style.setProperty('--accent-color-primary', accentColor);
+                root.style.setProperty('--accent-color-light', light);
+                root.style.setProperty('--accent-color-dark', dark);
+                if (rgb) {
+                    root.style.setProperty('--accent-color-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
+                }
+                
+                localStorage.setItem(LOCAL_STORAGE_KEYS.ACCENT_COLOR, accentColor);
+            } catch (error) {
+                console.error("Failed to set accent color", error);
+            }
+        }, [accentColor, isLoaded]);
+
+        // Auto-save projects to localStorage
         useEffect(() => {
             if (!isLoaded) return;
             try {
                 // Persist the current state without altering it (e.g., stopping timers)
                 localStorage.setItem(LOCAL_STORAGE_KEYS.PROJECTS, JSON.stringify(projects));
-                localStorage.setItem(LOCAL_STORAGE_KEYS.THEME, theme);
             } catch (error)
  {
                 console.error("Failed to auto-save to localStorage", error);
             }
-        }, [projects, theme, isLoaded]);
+        }, [projects, isLoaded]);
         
         const handleSave = useCallback(() => {
             try {
@@ -1067,7 +1224,6 @@
                 });
 
                 localStorage.setItem(LOCAL_STORAGE_KEYS.PROJECTS, JSON.stringify(projectsToSave));
-                localStorage.setItem(LOCAL_STORAGE_KEYS.THEME, theme);
                 setProjects(projectsToSave);
                 setSaveState('saved');
                 setTimeout(() => setSaveState('idle'), 1500);
@@ -1075,12 +1231,8 @@
                 console.error("Failed to save to localStorage", error);
                 alert("Could not save data. Your browser's storage might be full.");
             }
-        }, [projects, theme]);
+        }, [projects]);
         
-        const toggleTheme = () => {
-            setTheme(current => current === 'light' ? 'dark' : 'light');
-        };
-
         const handleSaveProject = ({ id, name, notes }) => {
             if (id) { // Editing existing project
                 setProjects(prev => prev.map(p => 
@@ -1096,6 +1248,7 @@
                     isRunning: false,
                     logs: [],
                     isExpanded: false,
+                    color: '#f8fafc',
                 };
                 setProjects(prev => [newProject, ...prev]);
                 setSortOrder('lastAdded');
@@ -1274,6 +1427,11 @@
             setIsConfirmLogDeleteModalOpen(false);
         };
         
+        const handleColorChange = (projectId, newColor) => {
+            setProjects(prev => prev.map(p =>
+                p.id === projectId ? { ...p, color: newColor } : p
+            ));
+        };
 
         const toggleProjectExpansion = (id) => {
             setProjects(prev => prev.map(p => 
@@ -1306,6 +1464,37 @@
                 return projectsCopy;
             });
         };
+        
+        const handleSearch = (filter) => {
+            setSearchFilter(filter);
+            setIsSearchModalOpen(false);
+        };
+
+        const handleClearSearch = () => {
+            setSearchFilter(null);
+        };
+
+        const displayedProjects = useMemo(() => {
+            if (!searchFilter) {
+                return projects;
+            }
+
+            return projects.filter(p => {
+                if (searchFilter.type === 'name') {
+                    return p.name.toLowerCase().includes(searchFilter.value.toLowerCase());
+                }
+                if (searchFilter.type === 'date') {
+                    const start = new Date(searchFilter.value.start);
+                    start.setHours(0, 0, 0, 0); // Start of the day
+                    const end = new Date(searchFilter.value.end);
+                    end.setHours(23, 59, 59, 999); // End of the day
+                    
+                    const projectDate = new Date(p.createdAt);
+                    return projectDate >= start && projectDate <= end;
+                }
+                return true;
+            });
+        }, [projects, searchFilter]);
 
         const projectToDeleteDetails = projects.find(p => p.id === projectToDelete);
         const projectForModal = projects.find(p => p.id === projectForTimeEntry);
@@ -1316,42 +1505,72 @@
         return (
             <>
                 <header className="header">
-                    <button className="icon-button" onClick={toggleTheme} aria-label="Toggle theme">
-                        {theme === 'light' ? <MoonIcon /> : <SunIcon />}
-                    </button>
+                    <div className="header-controls-left">
+                        <button className="view-toggle-button" onClick={() => setIsCompactView(v => !v)}>
+                           {isCompactView ? 'Show More' : 'Show Less'}
+                        </button>
+                        <div className="header-search">
+                            <button className="search-header-button" onClick={() => setIsSearchModalOpen(true)}>
+                               Search
+                            </button>
+                            {searchFilter && (
+                                <button className="clear-search-button" onClick={handleClearSearch}>
+                                   Clear Search
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                     <div className="header-controls-center">
+                        <div className="global-color-picker">
+                            <div className="color-picker-display" style={{ backgroundColor: accentColor }}></div>
+                            <input 
+                                type="color" 
+                                className="color-picker-input" 
+                                value={accentColor}
+                                onChange={(e) => setAccentColor(e.target.value)}
+                                aria-label="Change theme accent color"
+                            />
+                        </div>
+                    </div>
                     <div className="header-actions">
-                        <button 
-                            className={`sort-button ${sortOrder === 'lastAdded' ? 'active' : ''}`}
-                            onClick={() => handleSort('lastAdded')}
-                            disabled={projects.length === 0}
-                            aria-label="Sort by last added"
-                        >
-                            Last Added
-                        </button>
-                        <button 
-                            className={`sort-button ${sortOrder === 'lastInteraction' ? 'active' : ''}`}
-                            onClick={() => handleSort('lastInteraction')}
-                            disabled={projects.length === 0}
-                            aria-label="Sort by last active"
-                        >
-                            Last Active
-                        </button>
-                        <button className="add-project-header-button" onClick={handleOpenAddProjectModal}>
-                           Add Project
-                        </button>
-                        <button className={`save-button ${saveState}`} onClick={handleSave}>
-                           {saveState === 'saved' ? 'Saved!' : 'Save'}
-                        </button>
+                        <div className="header-actions-row">
+                            <button className="add-project-header-button" onClick={handleOpenAddProjectModal}>
+                               Add Project
+                            </button>
+                            <button className={`save-button ${saveState}`} onClick={handleSave}>
+                               {saveState === 'saved' ? 'Saved!' : 'Save'}
+                            </button>
+                        </div>
+                        <div className="header-actions-row">
+                            <span className="sort-by-label">Sort by:</span>
+                            <button 
+                                className={`sort-button ${sortOrder === 'lastAdded' ? 'active' : ''}`}
+                                onClick={() => handleSort('lastAdded')}
+                                disabled={projects.length === 0}
+                                aria-label="Sort by last added"
+                            >
+                                Last Added
+                            </button>
+                            <button 
+                                className={`sort-button ${sortOrder === 'lastInteraction' ? 'active' : ''}`}
+                                onClick={() => handleSort('lastInteraction')}
+                                disabled={projects.length === 0}
+                                aria-label="Sort by last active"
+                            >
+                                Last Active
+                            </button>
+                        </div>
                     </div>
                 </header>
 
                 <main>
-                    {projects.length > 0 ? (
+                    {displayedProjects.length > 0 ? (
                         <ul className="project-list">
-                            {projects.map(project => (
+                            {displayedProjects.map(project => (
                                 <ProjectItem
                                     key={project.id}
                                     project={project}
+                                    isCompactView={isCompactView}
                                     onToggleTimer={handleToggleTimer}
                                     onEditProject={handleOpenEditProjectModal}
                                     onDeleteProject={handleDeleteRequest}
@@ -1359,18 +1578,27 @@
                                     onToggleExpansion={toggleProjectExpansion}
                                     onEditLog={handleOpenEditLogModal}
                                     onDeleteLog={handleDeleteLogRequest}
+                                    onColorChange={handleColorChange}
                                 />
                             ))}
                         </ul>
                     ) : (
-                        <div className="no-projects">
-                            <p>No projects yet.</p>
-                            <p>Click 'Add Project' above to get started.</p>
+                         <div className="no-projects">
+                            {searchFilter ? (
+                                <p>No projects match your search criteria.</p>
+                             ) : (
+                                <>
+                                <p>No projects yet.</p>
+                                <p>Click 'Add Project' above to get started.</p>
+                                </>
+                             )}
                         </div>
                     )}
                 </main>
 
                 {isProjectModalOpen && <ProjectModal projectToEdit={projectToEdit} onSave={handleSaveProject} onClose={handleCloseProjectModal} />}
+                
+                {isSearchModalOpen && <SearchModal onSearch={handleSearch} onClose={() => setIsSearchModalOpen(false)} />}
                 
                 {isConfirmDeleteModalOpen && projectToDeleteDetails && (
                     <ConfirmationModal 
