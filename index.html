@@ -79,6 +79,8 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
     .icon-button {
@@ -105,6 +107,48 @@
     body.light .icon-button svg { fill: var(--text-primary-light); }
     body.dark .icon-button svg { fill: var(--text-primary-dark); }
     
+    .sort-button {
+        background-color: transparent;
+        border: 1px solid;
+        padding: 0.5rem 0.8rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+    body.light .sort-button {
+        color: var(--text-secondary-light);
+        border-color: var(--border-light);
+    }
+    body.dark .sort-button {
+        color: var(--text-secondary-dark);
+        border-color: var(--border-dark);
+    }
+    .sort-button:hover:not(:disabled) {
+        border-color: var(--teal-500);
+        color: var(--teal-500);
+    }
+    body.dark .sort-button:hover:not(:disabled) {
+        border-color: var(--teal-400);
+        color: var(--teal-400);
+    }
+    .sort-button.active {
+        border-color: var(--teal-500);
+        color: var(--teal-500);
+        background-color: rgba(20, 184, 166, 0.1);
+    }
+    body.dark .sort-button.active {
+        border-color: var(--teal-400);
+        color: var(--teal-400);
+        background-color: rgba(45, 212, 191, 0.1);
+    }
+    .sort-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
     .add-project-header-button {
         background-color: transparent;
         color: var(--text-secondary-light);
@@ -194,6 +238,14 @@
         display: flex;
         align-items: center;
     }
+    
+    .project-creation-date {
+      font-size: 0.8rem;
+      width: 100%;
+      margin-bottom: -0.25rem; /* Adjust space to project name */
+    }
+    body.light .project-creation-date { color: var(--text-secondary-light); }
+    body.dark .project-creation-date { color: var(--text-secondary-dark); }
 
     .project-name {
       font-weight: 500;
@@ -520,7 +572,7 @@
   <div id="root"></div>
 
   <script type="text/babel" data-type="module">
-    import React, { useState, useEffect, useCallback } from 'react';
+    import React, { useState, useEffect, useCallback, useMemo } from 'react';
     import { createRoot } from 'react-dom/client';
 
     // --- TYPE DEFINITIONS ---
@@ -541,6 +593,7 @@
       id: number;
       name: string;
       notes: string;
+      createdAt: string; // ISO string
       timeSpent: number; // in seconds, for completed sessions
       isRunning: boolean;
       timerStartTime?: number; // timestamp
@@ -564,6 +617,12 @@
         .join(':');
     };
     
+    const formatCreationDate = (isoString) => {
+      if (!isoString) return '';
+      const date = new Date(isoString);
+      return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+
     const formatLogDate = (isoString) => {
       const date = new Date(isoString);
       return date.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
@@ -875,6 +934,7 @@
         return (
             <li className={`project-item ${project.isExpanded ? 'expanded' : ''}`}>
                 <div className="project-item-main" onClick={() => onToggleExpansion(project.id)}>
+                    {project.createdAt && <div className="project-creation-date">{`Added: ${formatCreationDate(project.createdAt)}`}</div>}
                     <div className="project-name">{project.name}</div>
                     
                     <div className="project-content-row">
@@ -916,6 +976,7 @@
         const [projects, setProjects] = useState([]);
         const [theme, setTheme] = useState('light');
         const [isLoaded, setIsLoaded] = useState(false);
+        const [sortOrder, setSortOrder] = useState('lastAdded'); // 'lastAdded' or 'lastInteraction'
         
         // Project Modals
         const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
@@ -944,10 +1005,13 @@
                     const projectsWithDefaults = parsedProjects.map(p => ({
                         notes: '', // Add notes default if missing
                         ...p,
+                        createdAt: p.createdAt || new Date(p.id).toISOString(), // Add createdAt from ID if missing
                         isExpanded: p.isExpanded || false, // Persist expanded state
                         logs: p.logs || [],
                     }));
-                    setProjects(projectsWithDefaults);
+                    // Sort initially by creation date
+                    const sortedInitialProjects = projectsWithDefaults.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+                    setProjects(sortedInitialProjects);
                 }
                 if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
                     setTheme(savedTheme);
@@ -970,7 +1034,8 @@
                 // Persist the current state without altering it (e.g., stopping timers)
                 localStorage.setItem(LOCAL_STORAGE_KEYS.PROJECTS, JSON.stringify(projects));
                 localStorage.setItem(LOCAL_STORAGE_KEYS.THEME, theme);
-            } catch (error) {
+            } catch (error)
+ {
                 console.error("Failed to auto-save to localStorage", error);
             }
         }, [projects, theme, isLoaded]);
@@ -1026,12 +1091,14 @@
                     id: Date.now(),
                     name,
                     notes,
+                    createdAt: new Date().toISOString(),
                     timeSpent: 0,
                     isRunning: false,
                     logs: [],
                     isExpanded: false,
                 };
-                setProjects(prev => [...prev, newProject]);
+                setProjects(prev => [newProject, ...prev]);
+                setSortOrder('lastAdded');
             }
             handleCloseProjectModal();
         };
@@ -1214,6 +1281,32 @@
             ));
         };
         
+        const handleSort = (sortBy) => {
+            setSortOrder(sortBy);
+            setProjects(prevProjects => {
+                const projectsCopy = [...prevProjects];
+        
+                if (sortBy === 'lastInteraction') {
+                    const getLastInteraction = (project) => {
+                        if (project.timerStartTime) {
+                            return project.timerStartTime;
+                        }
+                        if (project.logs && project.logs.length > 0) {
+                            // Logs are pre-sorted, so the first one is the most recent
+                            return new Date(project.logs[0].date).getTime();
+                        }
+                        return new Date(project.createdAt).getTime();
+                    };
+                    
+                    projectsCopy.sort((a, b) => getLastInteraction(b) - getLastInteraction(a));
+                } else { // 'lastAdded'
+                    projectsCopy.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                }
+                
+                return projectsCopy;
+            });
+        };
+
         const projectToDeleteDetails = projects.find(p => p.id === projectToDelete);
         const projectForModal = projects.find(p => p.id === projectForTimeEntry);
         const logForModal = projectForModal && logToEdit ? projectForModal.logs.find(l => l.id === logToEdit.logId) : null;
@@ -1227,6 +1320,22 @@
                         {theme === 'light' ? <MoonIcon /> : <SunIcon />}
                     </button>
                     <div className="header-actions">
+                        <button 
+                            className={`sort-button ${sortOrder === 'lastAdded' ? 'active' : ''}`}
+                            onClick={() => handleSort('lastAdded')}
+                            disabled={projects.length === 0}
+                            aria-label="Sort by last added"
+                        >
+                            Last Added
+                        </button>
+                        <button 
+                            className={`sort-button ${sortOrder === 'lastInteraction' ? 'active' : ''}`}
+                            onClick={() => handleSort('lastInteraction')}
+                            disabled={projects.length === 0}
+                            aria-label="Sort by last active"
+                        >
+                            Last Active
+                        </button>
                         <button className="add-project-header-button" onClick={handleOpenAddProjectModal}>
                            Add Project
                         </button>
