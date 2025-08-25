@@ -73,8 +73,18 @@
     .header-search {
         display: flex;
         gap: 0.5rem;
+        align-items: center;
     }
     
+    .search-criteria-text {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px; /* Adjust as needed */
+    }
+
     .header-controls-center {
         position: absolute;
         top: 0.5rem;
@@ -166,6 +176,12 @@
     .add-project-header-button:hover, .search-header-button:hover, .clear-search-button:hover, .view-toggle-button:hover {
         border-color: var(--accent-color-light);
         color: var(--accent-color-light);
+    }
+
+    .add-project-header-button.saved {
+        border-color: var(--accent-color-light);
+        color: var(--accent-color-light);
+        background-color: rgba(var(--accent-color-rgb), 0.1);
     }
 
     .clear-search-button {
@@ -287,6 +303,15 @@
       color: var(--accent-color-light);
     }
 
+    .project-time-compact-view {
+      display: none;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      font-size: 1.1rem;
+      color: var(--text-primary);
+      flex-shrink: 0;
+    }
+
 
     .project-actions {
       display: flex;
@@ -385,12 +410,24 @@
     
     /* Compact View Styles */
     .project-item.is-compact-mode:not(.expanded) .project-item-main {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
         padding-top: 0.75rem;
         padding-bottom: 0.75rem;
+        gap: 1rem;
     }
     .project-item.is-compact-mode:not(.expanded) .project-name {
         text-align: left;
         font-size: 1.1rem;
+        width: auto;
+        flex-grow: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+     .project-item.is-compact-mode:not(.expanded) .project-time-compact-view {
+        display: block;
     }
     .project-item.is-compact-mode:not(.expanded) .project-creation-date,
     .project-item.is-compact-mode:not(.expanded) .project-content-row,
@@ -641,7 +678,6 @@
     // --- CONSTANTS ---
     const LOCAL_STORAGE_KEYS = {
       PROJECTS: 'project-timer-projects',
-      ACCENT_COLOR: 'project-timer-accent-color',
     };
 
     // --- HELPER FUNCTIONS ---
@@ -1043,7 +1079,7 @@
         }, [project.isRunning]);
 
         const elapsedTime = project.isRunning && project.timerStartTime
-            ? Math.floor((currentTime - project.timerStartTime) / 1000)
+            ? Math.max(0, Math.floor((currentTime - project.timerStartTime) / 1000))
             : 0;
 
         const displaySeconds = project.timeSpent + elapsedTime;
@@ -1067,6 +1103,7 @@
                 <div className="project-item-main" onClick={() => onToggleExpansion(project.id)}>
                     {project.createdAt && <div className="project-creation-date">{`Added: ${formatCreationDate(project.createdAt)}`}</div>}
                     <div className="project-name" style={{ color: project.color }}>{project.name}</div>
+                    <div className="project-time-compact-view">{formatTime(displaySeconds)}</div>
                     
                     <div className="project-content-row">
                         <div className="project-controls-left">
@@ -1109,8 +1146,7 @@
         const [sortOrder, setSortOrder] = useState('lastAdded'); // 'lastAdded' or 'lastInteraction'
         
         // UI State
-        const [isCompactView, setIsCompactView] = useState(false);
-        const [accentColor, setAccentColor] = useState('#14b8a6');
+        const [isCompactView, setIsCompactView] = useState(true);
         
         // Search
         const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
@@ -1134,12 +1170,6 @@
         // Load from localStorage on initial render
         useEffect(() => {
             try {
-                // Load Accent Color
-                const savedColor = localStorage.getItem(LOCAL_STORAGE_KEYS.ACCENT_COLOR);
-                if (savedColor) {
-                    setAccentColor(savedColor);
-                }
-
                 // Load Projects
                 const savedProjects = localStorage.getItem(LOCAL_STORAGE_KEYS.PROJECTS);
                 if (savedProjects) {
@@ -1162,28 +1192,6 @@
             }
             setIsLoaded(true);
         }, []);
-
-        // Update CSS variables and save accent color when it changes
-        useEffect(() => {
-            if (!isLoaded) return;
-            try {
-                const root = document.documentElement;
-                const light = lightenDarkenColor(accentColor, 40);
-                const dark = lightenDarkenColor(accentColor, -20);
-                const rgb = hexToRgb(accentColor);
-
-                root.style.setProperty('--accent-color-primary', accentColor);
-                root.style.setProperty('--accent-color-light', light);
-                root.style.setProperty('--accent-color-dark', dark);
-                if (rgb) {
-                    root.style.setProperty('--accent-color-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
-                }
-                
-                localStorage.setItem(LOCAL_STORAGE_KEYS.ACCENT_COLOR, accentColor);
-            } catch (error) {
-                console.error("Failed to set accent color", error);
-            }
-        }, [accentColor, isLoaded]);
 
         // Auto-save projects to localStorage
         useEffect(() => {
@@ -1473,6 +1481,18 @@
         const handleClearSearch = () => {
             setSearchFilter(null);
         };
+        
+        const getSearchCriteriaText = (filter) => {
+            if (!filter) return '';
+            if (filter.type === 'name') {
+                const value = filter.value.length > 15 ? `${filter.value.substring(0, 12)}...` : filter.value;
+                return `Name: "${value}"`;
+            }
+            if (filter.type === 'date') {
+                return `${filter.value.start} to ${filter.value.end}`;
+            }
+            return '';
+        };
 
         const displayedProjects = useMemo(() => {
             if (!searchFilter) {
@@ -1510,39 +1530,31 @@
                            {isCompactView ? 'Show More' : 'Show Less'}
                         </button>
                         <div className="header-search">
-                            <button className="search-header-button" onClick={() => setIsSearchModalOpen(true)}>
-                               Search
+                            <button 
+                                className={searchFilter ? 'clear-search-button' : 'search-header-button'}
+                                onClick={searchFilter ? handleClearSearch : () => setIsSearchModalOpen(true)}
+                            >
+                               {searchFilter ? 'Clear' : 'Search'}
                             </button>
                             {searchFilter && (
-                                <button className="clear-search-button" onClick={handleClearSearch}>
-                                   Clear Search
-                                </button>
+                                <p className="search-criteria-text" title={searchFilter.type === 'name' ? searchFilter.value : ''}>
+                                    {getSearchCriteriaText(searchFilter)}
+                                </p>
                             )}
                         </div>
                     </div>
-                     <div className="header-controls-center">
-                        <div className="global-color-picker">
-                            <div className="color-picker-display" style={{ backgroundColor: accentColor }}></div>
-                            <input 
-                                type="color" 
-                                className="color-picker-input" 
-                                value={accentColor}
-                                onChange={(e) => setAccentColor(e.target.value)}
-                                aria-label="Change theme accent color"
-                            />
-                        </div>
+                    <div className="header-controls-center">
+                        <button className="save-button" onClick={handleOpenAddProjectModal}>
+                           Add Project
+                        </button>
                     </div>
                     <div className="header-actions">
                         <div className="header-actions-row">
-                            <button className="add-project-header-button" onClick={handleOpenAddProjectModal}>
-                               Add Project
-                            </button>
-                            <button className={`save-button ${saveState}`} onClick={handleSave}>
+                            <button className={`add-project-header-button ${saveState === 'saved' ? 'saved' : ''}`} onClick={handleSave}>
                                {saveState === 'saved' ? 'Saved!' : 'Save'}
                             </button>
                         </div>
                         <div className="header-actions-row">
-                            <span className="sort-by-label">Sort by:</span>
                             <button 
                                 className={`sort-button ${sortOrder === 'lastAdded' ? 'active' : ''}`}
                                 onClick={() => handleSort('lastAdded')}
